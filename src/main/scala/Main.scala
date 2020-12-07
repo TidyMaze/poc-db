@@ -12,17 +12,19 @@ case class PersonName(name: String)
 object Main extends App {
   implicit val cs = IO.contextShift(ExecutionContext.global)
 
+  private val dbUrl = "jdbc:postgresql://localhost:5432/postgres"
+  private val dbUser = "postgres"
+  private val dbPassword = "postgres"
+
   // Doobie connection to database
-  val xa = Transactor.fromDriverManager[IO](
-    "org.postgresql.Driver", "jdbc:postgresql://localhost:5432/postgres", "postgres", "postgres"
-  )
+  val xa = Transactor.fromDriverManager[IO]("org.postgresql.Driver", dbUrl, dbUser, dbPassword)
 
   // Database migration using /src/main/resources/db/migration
-  val flyway: Flyway = Flyway.configure.dataSource("jdbc:postgresql://localhost:5432/postgres", "postgres", "postgres").load
+  val flyway: Flyway = Flyway.configure.dataSource(dbUrl, dbUser, dbPassword).load
   flyway.migrate()
 
   // Custom read for some columns in Person table
-  implicit val read: Read[PersonName] = Read[String].map(PersonName(_))
+  implicit val read: Read[PersonName] = Read[String].map(PersonName)
 
   // sql interpolation
   val name = "Satan2"
