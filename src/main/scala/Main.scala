@@ -17,7 +17,7 @@ object Main extends App {
   private val dbPassword = "postgres"
 
   // Doobie connection to database
-  val xa = Transactor.fromDriverManager[IO]("org.postgresql.Driver", dbUrl, dbUser, dbPassword)
+  val transactor = Transactor.fromDriverManager[IO]("org.postgresql.Driver", dbUrl, dbUser, dbPassword)
 
   // Database migration using /src/main/resources/db/migration
   val flyway: Flyway = Flyway.configure.dataSource(dbUrl, dbUser, dbPassword).load
@@ -43,7 +43,7 @@ object Main extends App {
 
   // merging database IO with other IOs (HTTP, GRPC ...)
   val main = for {
-    personsAndNames <- dbStuff.transact(xa)
+    personsAndNames <- dbStuff.transact(transactor)
     (persons, names) = personsAndNames
     _ <- IO { println(s"$persons, $names") }
   } yield ()
